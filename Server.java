@@ -1,16 +1,27 @@
 import java.net.*;
 import java.io.*;
+import java.util.HashMap;
 
 public class Server implements Runnable {
 
-    Socket client;
-    int clientNumber;
+    protected static HashMap<String, String> dnsTable;
+    private Socket client;
+    private int clientNumber;
+
     Server(Socket client, int clientNumber) {
         this.client = client;
         this.clientNumber = clientNumber;
     }
 
+    private static void initDnsTable() {
+        dnsTable = new HashMap<String, String>();
+        dnsTable.put("www.google.ca", "10.123.222.2");
+        dnsTable.put("www.caleb.ca", "10.211.32.8");
+    }
+
     public static void main(String[] args) throws IOException {
+
+        initDnsTable();
 
         int clientCount = 0;
         int port = 6052;
@@ -45,23 +56,24 @@ public class Server implements Runnable {
             out = new PrintWriter(client.getOutputStream(), true);
         } catch (IOException e) {
             System.out.println("Read failed.");
-            System.exit(-1);
+            System.exit(1);
         }
 
-        String line;
+        String address, ip;
         while(true) {
             try {
-                line = in.readLine();
-                System.out.format("Client %d: %s\n", clientNumber, line);
-                if (line.toLowerCase().equals("bye")) {
-                    out.println("Shutting down.");
+                address = in.readLine();
+                System.out.format("Client %d: %s\n", clientNumber, address);
+                if (address.toLowerCase().equals("bye")) {
+                    out.println("Closing Connection.");
                     break;
                 }
-                out.println(line);
-                System.out.format("Server: %s\n", line);
+                ip = getIP(address);
+                out.println(ip);
+                System.out.format("Server: %s\n", ip);
             } catch (IOException e) {
                 System.out.println("Read failed.");
-                System.exit(-1);
+                System.exit(1);
             }
 
         }
@@ -73,5 +85,10 @@ public class Server implements Runnable {
             System.err.println("Error closing client");
             System.exit(1);
         }
+    }
+
+    private String getIP(String domain) {
+        String defaultValue = "Unable to find the requested value.";
+        return dnsTable.getOrDefault(domain, defaultValue);
     }
 }
