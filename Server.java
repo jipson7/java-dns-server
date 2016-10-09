@@ -64,7 +64,7 @@ public class Server implements Runnable {
             try {
                 address = in.readLine();
                 System.out.format("Client %d: %s\n", clientNumber, address);
-                if (address.toLowerCase().equals("bye")) {
+                if (address.toLowerCase().equals("close")) {
                     out.println("Closing Connection.");
                     break;
                 }
@@ -88,7 +88,7 @@ public class Server implements Runnable {
     }
 
     private String getIP(String domain) {
-        String defaultValue = "Unable to find the requested value.";
+        String defaultValue = "Unable to resolve host " + domain + "\n";
         return dnsTable.getOrDefault(domain, defaultValue);
     }
 }
